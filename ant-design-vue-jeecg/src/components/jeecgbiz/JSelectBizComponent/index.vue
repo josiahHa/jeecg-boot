@@ -9,8 +9,9 @@
           :options="selectOptions"
           allowClear
           :disabled="disabled"
-          :open="false"
+          :open="selectOpen"
           style="width: 100%;"
+          @dropdownVisibleChange="handleDropdownVisibleChange"
           @click.native="visible=(buttons?visible:true)"
         />
       </slot>
@@ -85,7 +86,8 @@
         selectValue: [],
         selectOptions: [],
         dataSourceMap: {},
-        visible: false
+        visible: false,
+        selectOpen: false,
       }
     },
     computed: {
@@ -128,31 +130,36 @@
         this.selectOptions = options
         this.dataSourceMap = dataSourceMap
       },
+      handleDropdownVisibleChange() {
+        // 解决antdv自己的bug —— open 设置为 false 了，点击后还是添加了 open 样式，导致点击事件失效
+        this.selectOpen = true
+        this.$nextTick(() => {
+          this.selectOpen = false
+        })
+      },
     }
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="less" scoped>
   .j-select-biz-component-box {
 
-    $width: 82px;
+    @width: 82px;
 
     .left {
-      width: calc(100% - #{$width} - 8px);
+      width: calc(100% - @width - 8px);
     }
 
     .right {
-      width: #{$width};
+      width: @width;
     }
 
     .full {
       width: 100%;
     }
 
-    /deep/ {
-      .ant-select-search__field {
-        display: none !important;
-      }
+    /deep/ .ant-select-search__field {
+      display: none !important;
     }
   }
 </style>

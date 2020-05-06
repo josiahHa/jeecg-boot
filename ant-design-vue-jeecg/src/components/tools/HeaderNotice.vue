@@ -72,6 +72,7 @@
       </a-badge>
     </span>
     <show-announcement ref="ShowAnnouncement" @ok="modalFormOk"></show-announcement>
+    <dynamic-notice ref="showDynamNotice" :path="openPath" :formData="formData"/>
   </a-popover>
 </template>
 
@@ -79,11 +80,13 @@
   import { getAction,putAction } from '@/api/manage'
   import ShowAnnouncement from './ShowAnnouncement'
   import store from '@/store/'
+  import DynamicNotice from './DynamicNotice'
 
 
   export default {
     name: "HeaderNotice",
     components: {
+      DynamicNotice,
       ShowAnnouncement,
     },
     data () {
@@ -105,6 +108,8 @@
         websock: null,
         lockReconnect:false,
         heartCheck:null,
+        formData:{},
+        openPath:''
       }
     },
     computed:{
@@ -116,7 +121,7 @@
       this.loadData();
       //this.timerFun();
       this.initWebSocket();
-      this.heartCheckFun();
+     // this.heartCheckFun();
     },
     destroyed: function () { // 离开页面生命周期函数
       this.websocketclose();
@@ -172,7 +177,13 @@
           }
         });
         this.hovered = false;
-        this.$refs.ShowAnnouncement.detail(record);
+        if(record.openType==='component'){
+          this.openPath = record.openPage;
+          this.formData = {id:record.busId};
+          this.$refs.showDynamNotice.detail(record.openPage);
+        }else{
+          this.$refs.ShowAnnouncement.detail(record);
+        }
       },
       toMyAnnouncement(){
 
@@ -201,7 +212,7 @@
       websocketOnopen: function () {
         console.log("WebSocket连接成功");
         //心跳检测重置
-        this.heartCheck.reset().start();
+        //this.heartCheck.reset().start();
       },
       websocketOnerror: function (e) {
         console.log("WebSocket连接发生错误");
@@ -218,7 +229,7 @@
           this.loadData();
         }
         //心跳检测重置
-        this.heartCheck.reset().start();
+        //this.heartCheck.reset().start();
       },
       websocketOnclose: function (e) {
         console.log("connection closed (" + e.code + ")");
@@ -313,7 +324,7 @@
     top: 50px !important;
   }
 </style>
-<style lang="scss" scoped>
+<style lang="less" scoped>
   .header-notice{
     display: inline-block;
     transition: all 0.3s;
